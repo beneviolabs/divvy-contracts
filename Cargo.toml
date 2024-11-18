@@ -10,6 +10,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 near-sdk = {version = "5.5.0", features = ["unit-testing"] }
+lazy_static = "1.4.0"
 
 near-contract-standards = "5.5.0"
 borsh = "1.5.1"

@@ -385,6 +385,7 @@ name = "divvy_wealth"
 version = "0.0.1"
 dependencies = [
  "borsh",
+ "lazy_static",
  "near-contract-standards",
  "near-sdk",
  "serde",

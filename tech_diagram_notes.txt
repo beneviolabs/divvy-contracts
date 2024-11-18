@@ -1,0 +1,91 @@
+- Update the Pitch Deck to fill a product and technical slides // THIS weekend
+- Create a document inspired by templar's lite paper to highlight how we will leverage chain signatures and find an elegant way to describe how AI agents could be leveraged in a post MVP version.
+
+
+
+- Offramp; crypto to fiat 
+
+
+Assets on Divvy will be managed by contracts controlling token deposits and issuing tokens which represent a depositor's share of a stash, similar to the exchange contracts which provide liquidity and support swaps on ref.finance, with a few key differences: 1. Divvy pools need not maintain a balance between sets of tokens, 2. Pools will be permissioned to only allow transactions from the pool creator and accountIds which have been invited to pool. 3. Users will onboard with USDC, USDT, or NEAR, and token swaps will levearge ref's v2 contracts, then those assets will be stored in Divvy pools, 4. There will be contracts to support the Allowance functionality, whereby users will be prompted to approve transactions to send a preconfigured allowance percentage when an allowance triggering event is initiated from an off-chain service.
+
+Flow for deposting tokens into a divvy stash;
+New to Near User:
+  near address creation via bitte, email address captured, onrammper initalized to acquire Near to their address,
+
+
+
+
+Each time there is cash flow, such as a deposit or withdrawal, a new sub-period starts.
+
+- Receive an allowance; off-ramp as a beneficiary
+
+  - Divvy process recognizes that an allowance is available, it initiates transactions to create a FT drop, withdraw the allowance value in NEAR from the pool, and send that amount to the drop. 
+    - can this be pre-approved at the time of creation of the allowance?
+
+  - The drop private key, etc would need to be saved in Divvy backend to be availble for the remainder of the flow 
+
+  - Divvy backend initiates a Twilio/SMS flow to verify the user is the owner of the phone number
+
+  - upon successful verification, the user is redirected to Divvy, Divvy's backend recognizes the successful verification and responds with a redirect to the allowance's keypom FT drop URL
+
+  - The user follows the URL, accepts the tokens into their existing wallet, or creates a new one, as part of the FT drop flow on mynearwallet
+
+  - Divvy recognizes that the drop has been claimed, then texts the beneficiary with a URL that they can use to initiate offboarding to their bank account.
+
+
+
+
+
+
+Questions:
+- What is the benefit of putting assets in a pool, when I could buy them own my own and hold in my own wallet?
+  - Token swaps will be cheaper. Storing your assets in pools allows Divvy to find cheaper ways to support Withdrawing USDC or purchasing other tokens. Divvy does this by finding the cheapests route across Divvy pools and partner DEX'es to satisfy the requested widthdrawl token purchases and token swap requests.
+
+-
+
+Question for Rain
+ - I'd like to get some cards setup for testing; with assets on NEAR as collatoral. How quickly can we get that setup?
+
+ - I'm interested in providing cards for family members backed by my crypto assets. Can I do that?  say I'm building an app that allows people to do something similar - setup a debit card with allowance for family members backed by USDC. Can I do that with Rain?
+
+
+let's chat about authorizxed users vs card hodlers.
+
+she says peole are switching from that competitor because Rain's fee structure are more clear and predictable. e.g. they have lots of usage based fees and perhaps support issues. and Rain's cards are US issued vs HK
+
+if they are authorized users then card user s could improvbe their credcit score.
+
+https://use.raincards.xyz/signup
+
+ Fees:
+  interchange fee, one time setup fee,
+  monthly minimums for developer plan is 500/month, startup plan does have a minimum interchage fee per month, for startup is 1000/month
+
+  one time setup fee for developer is 7500, twice that for startup, 80bps sharing for startup, 25bps for developer
+
+fees are shared on swipe for their statupe and enterprise plans
+cards can be customized
+
+supported Near is not currently on their roadmap, perhaps supporting Solana around christmas. They might be open to supporting NEAR.
+
+Supported states is an issue to look into.
+go live time if a week to 2 months.
+they can fully handle KYC.
+=
+ they support 18 states in the US, not all are supported. They are planning to support more states over time. no idea on how long that might take. Q1 2025 this will begin to be more of a priority
+
+
+
+ Reap, Hong Kong Issuer:
+
+ - they don't currently issue direct to consumers in the US.
+
+
+
+
+
+
+
+
+
+
