@@ -3,7 +3,7 @@ name = "divvy_wealth"
 version = "0.0.1"
 authors = ["Benevio Labs <hello@benevio.dev>"]
 edition = "2021"
-repository = "https://github.com/<xxx>/<xxx>"
+repository = "https://github.com/charleslavon/divvy-contracts"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
