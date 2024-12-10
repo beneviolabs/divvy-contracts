@@ -38,7 +38,7 @@ impl Contract {
     let stash_id = self.stashes.len() as u64;
     self.stashes.insert(stash_id, Stash::new(stash_id, name));
 
-    let mut set = self.get_stashes_for_account(env::predecessor_account_id());
+    let mut set: UnorderedSet<u64> = self.accounts.get(&env::predecessor_account_id()).unwrap_or_else(|| UnorderedSet::new(b"s".to_vec()));
     set.insert(&stash_id);
     self.accounts.insert(&env::predecessor_account_id(), &set);
 
@@ -84,8 +84,8 @@ impl Contract {
     self.internal_check_storage(prev_storage);
   }
 
-  pub fn get_stashes_for_account(&self, account_id: AccountId) -> UnorderedSet<u64> {
-    self.accounts.get(&account_id).unwrap_or_else(|| UnorderedSet::new(b"s".to_vec()))
+  pub fn get_stashes_for_account(&self, account_id: AccountId) -> Vec<u64> {
+    self.accounts.get(&account_id).unwrap_or_else(|| UnorderedSet::new(b"s".to_vec())).to_vec()
   }
 
  // TODO add helper methods to fetch shares per vault by accountId, decide what methods should be here vs in an indexer.

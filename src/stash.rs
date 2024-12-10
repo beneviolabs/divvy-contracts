@@ -29,7 +29,6 @@ pub struct SwapAction {
     pub min_amount_out: U128,
 }
 
-#[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Stash {
     id: u64,
