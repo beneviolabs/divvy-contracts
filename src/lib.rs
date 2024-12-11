@@ -4,9 +4,7 @@ use near_contract_standards::fungible_token::Balance;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
 use near_sdk::{env, near_bindgen, AccountId, NearToken, Promise, StorageUsage};
-
-use crate::stash::Stash;
-
+use stash::Stash;
 
 mod token_vault;
 mod stash;
@@ -31,6 +29,7 @@ impl Contract {
     }
   }
 
+  //TODO impolement deposit and withdraw payable methods
 
   #[payable]
   pub fn create_stash(&mut self, name: String) {

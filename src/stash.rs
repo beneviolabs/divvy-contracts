@@ -1,16 +1,15 @@
 use std::collections::HashMap;
 
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap};
+use near_sdk::collections::LookupMap;
 use near_sdk::json_types::U128;
 use near_sdk::{
-    assert_one_yocto, env, near_bindgen, AccountId, NearToken, PanicOnDefault, Promise
+    assert_one_yocto, env, AccountId, NearToken, PanicOnDefault, Promise
 };
 use near_contract_standards::fungible_token::Balance;
 
 use crate::token_vault::TokenVault;
 
-#[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Stash {
     id: u64,
@@ -23,9 +22,7 @@ pub struct Stash {
 }
 
 #[allow(dead_code)] //TODO
-#[near_bindgen]
 impl Stash {
-    #[init]
     pub fn new(id: u64, name: String) -> Self {
         assert!(!env::state_exists(), "ERR_CONTRACT_IS_INITIALIZED");
         let mut authorized_users = LookupMap::new(b"a".to_vec());
@@ -59,7 +56,6 @@ impl Stash {
 
     // TODO use a virtual account here?
     // Add deposit associated to the predecessor's virtual account for the given token
-    #[payable]
     pub fn deposit(&mut self, token_id: AccountId) -> Balance {
         let sender = env::predecessor_account_id();
         self.assert_authorized(sender.clone());
@@ -106,7 +102,6 @@ impl Stash {
     }
 
     /// Withdraws given token from the deposits of given user.
-    #[payable]
     pub fn withdraw(&mut self, token_id: AccountId, amount: U128) {
         assert_one_yocto();
         let amount: u128 = amount.into();
