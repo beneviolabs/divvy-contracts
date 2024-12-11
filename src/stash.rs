@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::U128;
-use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     assert_one_yocto, env, near_bindgen, AccountId, NearToken, PanicOnDefault, Promise
 };
@@ -11,24 +10,7 @@ use near_contract_standards::fungible_token::Balance;
 
 use crate::token_vault::TokenVault;
 
-/// Single swap action.
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct SwapAction {
-    /// Vault which should be used for swapping.
-    pub vault_id: u64,
-    /// Token to swap from.
-    pub token_in: AccountId,
-    /// Amount to exchange.
-    /// If amount_in is None, it will take amount_out from previous step.
-    /// Will fail if amount_in is None on the first step.
-    pub amount_in: Option<U128>,
-    /// Token to swap into.
-    pub token_out: AccountId,
-    /// Required minimum amount of token_out.
-    pub min_amount_out: U128,
-}
-
+#[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct Stash {
     id: u64,
