@@ -1,23 +1,21 @@
 use std::collections::HashMap;
 
 use near_contract_standards::fungible_token::Balance;
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
-use near_sdk::{env, near_bindgen, AccountId, NearToken, Promise, StorageUsage};
+use near_sdk::{env, near, AccountId, NearToken, Promise, StorageUsage};
 use stash::Stash;
 
 mod token_vault;
 mod stash;
 
-#[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
+#[near(contract_state)]
 pub struct Contract {
   stashes: HashMap<u64, Stash>,
   accounts: UnorderedMap<AccountId, UnorderedSet<u64>>,
 }
 
 
-#[near_bindgen]
+#[near]
 impl Contract {
 
   #[init]
