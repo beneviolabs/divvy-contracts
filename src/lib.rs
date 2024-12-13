@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use near_contract_standards::fungible_token::Balance;
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
 use near_sdk::{env, near, AccountId, NearToken, Promise, StorageUsage};
@@ -10,7 +8,7 @@ mod stash;
 
 #[near(contract_state)]
 pub struct Contract {
-  stashes: HashMap<u64, Stash>,
+  stashes: UnorderedMap<u64, Stash>,
   accounts: UnorderedMap<AccountId, UnorderedSet<u64>>,
 }
 
@@ -22,7 +20,7 @@ impl Contract {
   pub fn new() -> Self {
     assert!(!env::state_exists(), "ERR_CONTRACT_IS_INITIALIZED");
     Self {
-      stashes: HashMap::new(),
+      stashes: UnorderedMap::new(b"s".to_vec()),
       accounts: UnorderedMap::new(b"a".to_vec()),
     }
   }
@@ -33,7 +31,7 @@ impl Contract {
   pub fn create_stash(&mut self, name: String) {
     let prev_storage = env::storage_usage();
     let stash_id = self.stashes.len() as u64;
-    self.stashes.insert(stash_id, Stash::new(stash_id, name));
+    self.stashes.insert(&stash_id, &Stash::new(stash_id, name));
 
     let mut set: UnorderedSet<u64> = self.accounts.get(&env::predecessor_account_id()).unwrap_or_else(|| UnorderedSet::new(b"s".to_vec()));
     set.insert(&stash_id);
@@ -46,7 +44,7 @@ impl Contract {
   // add tokenVault into a stash
   pub fn add_token_to_stash(&mut self, stash_id: u64, token_id: AccountId) {
     let prev_storage = env::storage_usage();
-    let stash = self.stashes.get_mut(&stash_id).expect("ERR_STASH_NOT_FOUND");
+    let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
     stash.add_vault(token_id);
     self.internal_check_storage(prev_storage);
   }
@@ -60,7 +58,7 @@ impl Contract {
   // add liquidity to a given stash
   pub fn add_liquidity_to_stash(&mut self, stash_id: u64, token_id: AccountId, amount: Balance) {
     let prev_storage = env::storage_usage();
-    let stash = self.stashes.get_mut(&stash_id).expect("ERR_STASH_NOT_FOUND");
+    let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
     stash.add_liquidity(token_id, amount);
     self.internal_check_storage(prev_storage);
   }
@@ -68,7 +66,7 @@ impl Contract {
   // remove liquidity from a given stash
   pub fn remove_liquidity_from_stash(&mut self, stash_id: u64, token_id: AccountId, amount: Balance) {
     let prev_storage = env::storage_usage();
-    let stash = self.stashes.get_mut(&stash_id).expect("ERR_STASH_NOT_FOUND");
+    let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
     stash.remove_liquidity(token_id, amount);
     self.internal_check_storage(prev_storage);
   }
@@ -76,7 +74,7 @@ impl Contract {
   // authorize additional stash contributor
   pub fn authorize_contributor(&mut self, stash_id: u64, account_id: AccountId) {
     let prev_storage = env::storage_usage();
-    let stash = self.stashes.get_mut(&stash_id).expect("ERR_STASH_NOT_FOUND");
+    let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
     stash.authorize_contributor(account_id);
     self.internal_check_storage(prev_storage);
   }
@@ -100,8 +98,8 @@ impl Contract {
 impl Contract {
 
   fn internal_check_storage(&self, prev_storage: StorageUsage) -> u128 {
-      let storage_needed = env::storage_usage() - prev_storage;
-      let storage_cost = storage_needed as u128 * env::storage_byte_cost().as_yoctonear();
+      let storage_needed = env::storage_usage().checked_sub(prev_storage);
+      let storage_cost = storage_needed.unwrap_or(0) as u128 * env::storage_byte_cost().as_yoctonear();
 
       let refund = env::attached_deposit()
           .checked_sub(NearToken::from_yoctonear(storage_cost))

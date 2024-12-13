@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::{LookupMap, UnorderedMap};
 use near_sdk::json_types::U128;
 use near_sdk::{
     assert_one_yocto, env, AccountId, NearToken, PanicOnDefault, Promise
@@ -16,7 +14,7 @@ pub struct Stash {
     name: String,
     vaults: LookupMap<AccountId, TokenVault>,
     /// Balances of deposited tokens for each account.
-    deposited_amounts: LookupMap<AccountId, HashMap<AccountId, Balance>>,
+    deposited_amounts: LookupMap<AccountId, UnorderedMap<AccountId, Balance>>,
     // Authorized users
     authorized_users: LookupMap<AccountId, bool>,
 }
@@ -72,8 +70,8 @@ impl Stash {
         let token = stash.get_token_type();
 
         let deposits = self.internal_get_deposits(&sender_id);
-        let deposit = deposits.get(&token.clone()).unwrap_or(&0);
-        assert!(*deposit >= amount, "ERR_NOT_ENOUGH");
+        let deposit = deposits.get(&token.clone()).unwrap_or(0);
+        assert!(deposit >= amount, "ERR_NOT_ENOUGH");
 
         let shares = stash.add_liquidity(&sender_id, amount);
         self.vaults.insert(&token_id, &stash);
@@ -95,7 +93,8 @@ impl Stash {
         self.vaults.insert(&token_id, &stash);
         let tokens = stash.get_token_type();
         let mut deposits = self.internal_get_deposits(&sender_id);
-        *deposits.entry(tokens.clone()).or_default() += new_balance;
+        let current_balance = deposits.get(&tokens).unwrap_or(0);
+        deposits.insert(&tokens, &(current_balance + new_balance));
         self.deposited_amounts.insert(&sender_id, &deposits);
 
         new_balance
@@ -107,7 +106,7 @@ impl Stash {
         let amount: u128 = amount.into();
         let sender_id: AccountId = env::predecessor_account_id();
         self.assert_authorized(sender_id.clone());
-        let mut deposits: HashMap<AccountId, u128> = self.deposited_amounts.get(&sender_id).unwrap();
+        let mut deposits: UnorderedMap<AccountId, u128> = self.deposited_amounts.get(&sender_id).unwrap();
         let available_amount: u128 = deposits
             .get(&token_id)
             .expect("ERR_NO_TOKEN")
@@ -122,7 +121,7 @@ impl Stash {
                 self.authorized_users.remove(&sender_id);
             }
         } else {
-            deposits.insert(token_id.clone(), available_amount - amount);
+            deposits.insert(&token_id.clone(), &(available_amount - amount));
         }
         self.deposited_amounts.insert(&sender_id, &deposits);
 
@@ -138,7 +137,6 @@ mod tests {
     use super::*;
     use near_sdk::test_utils::{accounts, VMContextBuilder};
     use near_sdk::testing_env;
-    use std::collections::HashMap;
 
     fn get_context(predecessor_account_id: AccountId) -> VMContextBuilder {
         let mut builder = VMContextBuilder::new();
@@ -181,8 +179,8 @@ mod tests {
         let amount: u128 = 1000;
 
         // Simulate deposit
-        let mut deposits: HashMap<AccountId, u128> = HashMap::new();
-        deposits.insert(token_id.clone(), amount);
+        let mut deposits: UnorderedMap<AccountId, u128> = UnorderedMap::new(b"d".to_vec());
+        deposits.insert(&token_id.clone(), &amount);
         contract.deposited_amounts.insert(&accounts(0), &deposits);
 
         // Attempt to withdraw more than available
@@ -265,9 +263,9 @@ impl Stash {
             "Token is not on the allowed list"
         );
         let mut deposits = self.internal_get_deposits(sender_id);
-        deposits.insert(token_id.clone(), amount + deposits.get(token_id).unwrap_or(&0));
+        deposits.insert(&token_id.clone(), &(amount + deposits.get(token_id).unwrap_or(0)));
          self.deposited_amounts.insert(sender_id, &deposits);
-        *deposits.get(token_id).unwrap()
+        deposits.get(token_id).unwrap().clone()
     }
 
     fn is_allowlisted_token(&self, token_id: &AccountId) -> bool {
@@ -275,10 +273,9 @@ impl Stash {
     }
 
     /// Returns current balances across all tokens for given user.
-    fn internal_get_deposits(&self, sender_id: &AccountId) -> HashMap<AccountId, Balance> {
+    fn internal_get_deposits(&self, sender_id: &AccountId) -> UnorderedMap<AccountId, Balance> {
         self.deposited_amounts
             .get(sender_id)
-            .unwrap_or_else(|| HashMap::new())
-            .clone()
+            .unwrap_or_else(|| UnorderedMap::new(b"d".to_vec()))
     }
 }
