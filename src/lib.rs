@@ -1,12 +1,13 @@
 use near_contract_standards::fungible_token::Balance;
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
-use near_sdk::{env, near, AccountId, NearToken, Promise, StorageUsage};
+use near_sdk::{env, near, AccountId, NearToken, PanicOnDefault, Promise, StorageUsage};
 use stash::Stash;
 
 mod token_vault;
 mod stash;
 
 #[near(contract_state)]
+#[derive(PanicOnDefault)]
 pub struct Contract {
   stashes: UnorderedMap<u64, Stash>,
   accounts: UnorderedMap<AccountId, UnorderedSet<u64>>,
