@@ -102,10 +102,8 @@ impl Contract {
 impl Contract {
 
   fn internal_check_storage(&self, prev_storage: StorageUsage) -> u128 {
-      let storage_cost = env::storage_usage()
-          .checked_sub(prev_storage)
-          .unwrap_or_default() as Balance
-          * env::storage_byte_cost().as_yoctonear();
+      let storage_needed = env::storage_usage() - prev_storage;
+      let storage_cost = storage_needed as u128 * env::storage_byte_cost().as_yoctonear();
 
       let refund = env::attached_deposit()
           .checked_sub(NearToken::from_yoctonear(storage_cost))
