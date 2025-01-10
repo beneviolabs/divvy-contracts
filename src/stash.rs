@@ -88,7 +88,7 @@ impl Stash {
         let mut stash = self.vaults.get(&token_id).expect("ERR_NO_Stash");
         let new_balance = stash.remove_liquidity(
             &sender_id,
-            shares.into(),
+            shares,
         );
         self.vaults.insert(&token_id, &stash);
         let tokens = stash.get_token_type();
@@ -109,8 +109,7 @@ impl Stash {
         let mut deposits: UnorderedMap<AccountId, u128> = self.deposited_amounts.get(&sender_id).unwrap();
         let available_amount: u128 = deposits
             .get(&token_id)
-            .expect("ERR_NO_TOKEN")
-            .clone();
+            .expect("ERR_NO_TOKEN");
         println!("available_amount vs amount: {}, {}", available_amount, amount);
         assert!(available_amount >= amount, "ERR_NOT_ENOUGH");
         if available_amount == amount {
@@ -265,7 +264,7 @@ impl Stash {
         let mut deposits = self.internal_get_deposits(sender_id);
         deposits.insert(&token_id.clone(), &(amount + deposits.get(token_id).unwrap_or(0)));
          self.deposited_amounts.insert(sender_id, &deposits);
-        deposits.get(token_id).unwrap().clone()
+        deposits.get(token_id).unwrap()
     }
 
     fn is_allowlisted_token(&self, token_id: &AccountId) -> bool {

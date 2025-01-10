@@ -31,7 +31,7 @@ impl Contract {
   #[payable]
   pub fn create_stash(&mut self, name: String) {
     let prev_storage = env::storage_usage();
-    let stash_id = self.stashes.len() as u64;
+    let stash_id = self.stashes.len();
     self.stashes.insert(&stash_id, &Stash::new(stash_id, name));
 
     let mut set: UnorderedSet<u64> = self.accounts.get(&env::predecessor_account_id()).unwrap_or_else(|| UnorderedSet::new(b"s".to_vec()));
@@ -104,12 +104,8 @@ impl Contract {
 
       let refund = env::attached_deposit()
           .checked_sub(NearToken::from_yoctonear(storage_cost))
-          .expect(
-              format!(
-                  "ERR_STORAGE_DEPOSIT need {}, attatched {}",
-                  storage_cost, env::attached_deposit()
-              ).as_str()
-          );
+          .unwrap_or_else(|| panic!("ERR_STORAGE_DEPOSIT need {}, attatched {}",
+                  storage_cost, env::attached_deposit()));
       if !refund.is_zero() {
           Promise::new(env::predecessor_account_id()).transfer(refund);
       }

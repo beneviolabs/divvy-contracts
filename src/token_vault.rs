@@ -99,8 +99,8 @@ impl TokenVault {
         self.shares_total_supply += shares;
 
         // Update sender's balance
-        let sender_balance = self.shares.get(&sender).unwrap_or(0);
-        self.shares.insert(&sender, &(sender_balance + shares));
+        let sender_balance = self.shares.get(sender).unwrap_or(0);
+        self.shares.insert(sender, &(sender_balance + shares));
 
         near_sdk::env::log_str(format!("Sender: {}, Deposited {} assets, Minted {} shares", sender, amount, shares)
 .as_str());
@@ -109,7 +109,7 @@ impl TokenVault {
 
 
     pub fn remove_liquidity(&mut self, sender: &AccountId, shares: u128) -> u128 {
-        let sender_balance: u128 = self.shares.get(&sender).unwrap_or(0);
+        let sender_balance: u128 = self.shares.get(sender).unwrap_or(0);
         assert!(
             sender_balance >= shares,
             "Not enough shares to withdraw, balance: {}",
@@ -124,7 +124,7 @@ impl TokenVault {
 
         // Update sender's balance
         let new_balance = sender_balance - shares;
-        self.shares.insert(&sender, &new_balance);
+        self.shares.insert(sender, &new_balance);
 
         // Log the transaction
         near_sdk::env::log_str(&format!("Sender: {}, Withdrew {} shares, Burned {} assets", sender, shares, assets));
