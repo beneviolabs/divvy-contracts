@@ -22,7 +22,6 @@ pub struct Stash {
 #[allow(dead_code)] //TODO
 impl Stash {
     pub fn new(id: u64, name: String) -> Self {
-        assert!(!env::state_exists(), "ERR_CONTRACT_IS_INITIALIZED");
         let mut authorized_users = LookupMap::new(b"a".to_vec());
         authorized_users.insert(&env::predecessor_account_id(), &true);
         Self {
@@ -124,10 +123,8 @@ impl Stash {
         }
         self.deposited_amounts.insert(&sender_id, &deposits);
 
-
-        let receiver_id: AccountId = sender_id.try_into().unwrap();
          // TODO - handle supported token types. The below assumes the Stash contains only near tokens
-        Promise::new(receiver_id).transfer(NearToken::from_near(amount));
+        Promise::new(sender_id).transfer(NearToken::from_near(amount));
     }
 }
 
