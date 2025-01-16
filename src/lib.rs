@@ -1,7 +1,8 @@
 use near_contract_standards::fungible_token::Balance;
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
-use near_sdk::{env, near, AccountId, NearToken, PanicOnDefault, Promise, StorageUsage};
+use near_sdk::{env, log, near, AccountId, NearToken, PanicOnDefault, Promise, StorageUsage};
 use stash::Stash;
+
 
 mod token_vault;
 mod stash;
@@ -27,9 +28,8 @@ impl Contract {
   }
 
   //TODO impolement deposit and withdraw payable methods
-
   #[payable]
-  pub fn create_stash(&mut self, name: String) {
+  pub fn create_stash(&mut self, name: String) -> u64 {
     let prev_storage = env::storage_usage();
     let stash_id = self.stashes.len();
     self.stashes.insert(&stash_id, &Stash::new(stash_id, name));
@@ -39,10 +39,11 @@ impl Contract {
     self.accounts.insert(&env::predecessor_account_id(), &set);
 
     self.internal_check_storage(prev_storage);
-
+    stash_id
   }
 
   // add tokenVault into a stash
+  #[payable]
   pub fn add_token_to_stash(&mut self, stash_id: u64, token_id: AccountId) {
     let prev_storage = env::storage_usage();
     let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
@@ -57,6 +58,7 @@ impl Contract {
   }
 
   // add liquidity to a given stash
+  #[payable]
   pub fn add_liquidity_to_stash(&mut self, stash_id: u64, token_id: AccountId, amount: Balance) {
     let prev_storage = env::storage_usage();
     let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
@@ -65,6 +67,7 @@ impl Contract {
   }
 
   // remove liquidity from a given stash
+  #[payable]
   pub fn remove_liquidity_from_stash(&mut self, stash_id: u64, token_id: AccountId, amount: Balance) {
     let prev_storage = env::storage_usage();
     let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
@@ -73,6 +76,7 @@ impl Contract {
   }
 
   // authorize additional stash contributor
+  #[payable]
   pub fn authorize_contributor(&mut self, stash_id: u64, account_id: AccountId) {
     let prev_storage = env::storage_usage();
     let mut stash = self.stashes.get(&stash_id).expect("ERR_STASH_NOT_FOUND");
@@ -81,6 +85,7 @@ impl Contract {
   }
 
   pub fn get_stashes_for_account(&self, account_id: AccountId) -> Vec<u64> {
+    log!("stash keys are {:?}", self.accounts.keys().collect::<Vec<AccountId>>());
     self.accounts.get(&account_id).unwrap_or_else(|| UnorderedSet::new(b"s".to_vec())).to_vec()
   }
 
@@ -141,6 +146,8 @@ mod tests {
       let mut context = get_context(accounts(0));
       testing_env!(context.attached_deposit(NearToken::from_near(1)).build());
       let mut contract = Contract::new();
+      assert_eq!(contract.stashes.len(), 0);
+      assert_eq!(contract.accounts.len(), 0);
       contract.create_stash("Roommates".to_string());
       assert_eq!(contract.stashes.len(), 1);
       assert_eq!(contract.accounts.len(), 1);
